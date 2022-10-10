@@ -1,6 +1,49 @@
 import 'package:flutter/material.dart';
 
 import 'package:othello/app/othello/widget/cell.dart';
+import 'package:othello/app/othello/process/check.dart';
+
+enum Player {
+  // 黒
+  black,
+  // 白
+  white,
+}
+
+enum CellType {
+  // 石がある
+  exists,
+  // 何もない
+  empty,
+  // 石を置ける
+  canPut,
+}
+
+class CellState {
+  CellState({this.cellType = CellType.empty, this.owner});
+
+  CellType cellType;
+  Player? owner;
+}
+
+class Coordinate {
+  Coordinate({required this.x, required this.y});
+
+  int x;
+  int y;
+}
+
+// cellの状態を持たせるlist
+List<List<CellState>> table = List.generate(
+  8,
+  (index) => List<CellState>.generate(
+    8,
+    ((index) => (CellState(cellType: CellType.empty))),
+  ),
+);
+
+// 現在のプレイヤー（最初は黒）
+Player nowPrayer = Player.black;
 
 //マス目[OthelloCell]を表示するBoard
 class OthelloBoard extends StatefulWidget {
@@ -12,77 +55,69 @@ class OthelloBoard extends StatefulWidget {
   State<OthelloBoard> createState() => _OthelloBoardState();
 }
 
-enum Player {
-  black,
-  white,
-}
-
-enum SquareState {
-  black,
-  white,
-  empty,
-}
-
 class _OthelloBoardState extends State<OthelloBoard> {
-  //要素数64のリストを生成し初期値としてnullを与える
-  final List<String?> _OthelloSquare = List.generate(64, (index) => null);
-
-  //現在のプレイヤー
-  Player nowPlayer = Player.black;
-  int blackCount = 0;
-  int whiteCount = 0;
-
-  void countCell() {
-    blackCount = _OthelloSquare.where((String? value) => value == 'B').toList().length;
-    whiteCount = _OthelloSquare.where((String? value) => value == 'W').toList().length;
+  @override
+  // [initState] = Widgetが作成されたタイミングで処理をする
+  void initState() {
+    initStartCellState();
+    super.initState();
   }
 
-  void handleClick(int i) {
-    //すでに石が置かれている場合は何もしない
-    if (_OthelloSquare[i] != null) return;
-
-    //final squares = _OthelloSquare.sublist(0);
-    if (nowPlayer == Player.black) {
-      _OthelloSquare[i] = 'B';
-      countCell();
-    } else if (nowPlayer == Player.white) {
-      _OthelloSquare[i] = 'W';
-      countCell();
-    }
-
-    setState(() {
-      //nowPlayerを交換する
-      if (nowPlayer == Player.black) {
-        nowPlayer = Player.white;
-      } else {
-        nowPlayer = Player.black;
+  /// 初期状態を作る
+  void initStartCellState() {
+    // 最初の石の状態を作る
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        if (i == 3 && j == 3 || i == 4 && j == 4) {
+          // 最初に黒を置いているところ
+          table[i][j] = CellState(cellType: CellType.exists, owner: Player.black);
+        } else if (i == 3 && j == 4 || i == 4 && j == 3) {
+          // 最初に白を置いているところ
+          table[i][j] = CellState(cellType: CellType.exists, owner: Player.white);
+        } else {
+          // その他
+          table[i][j] = CellState(cellType: CellType.empty, owner: null);
+        }
       }
-    });
+    }
+  }
+
+  /// 石を置いた時の処理
+  void _handleClick(int x, int y) {
+    if (table[x][y].cellType != CellType.canPut) {
+      return;
+    } else {
+      setState(() {
+        List<Coordinate> canSwhichList = pasteItemToTable(x, y, nowPrayer);
+        if (nowPrayer == Player.black) {
+          table[x][y] = CellState(cellType: CellType.exists, owner: Player.black);
+          if (canSwhichList.isNotEmpty) {
+            for (int i = 0; i < canSwhichList.length; i++) {
+              table[canSwhichList[i].x][canSwhichList[i].y] = CellState(cellType: CellType.exists, owner: Player.black);
+            }
+          }
+          nowPrayer = Player.white;
+        } else {
+          table[x][y] = CellState(cellType: CellType.exists, owner: Player.white);
+          if (canSwhichList.isNotEmpty) {
+            for (int i = 0; i < canSwhichList.length; i++) {
+              table[canSwhichList[i].x][canSwhichList[i].y] = CellState(cellType: CellType.exists, owner: Player.white);
+            }
+          }
+          nowPrayer = Player.black;
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final nextPlayer = 'Next Player: ${nowPlayer == Player.black ? 'black' : 'white'}';
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text(nextPlayer, style: const TextStyle(fontSize: 25)),
-        ),
         Container(
           color: const Color.fromARGB(223, 3, 110, 44),
           child: _buildBoard(),
         ),
-        Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('black:$blackCount', style: const TextStyle(fontSize: 25)),
-                const Text('/', style: TextStyle(fontSize: 25)),
-                Text('white:$whiteCount', style: const TextStyle(fontSize: 25))
-              ],
-            )),
       ],
     );
   }
@@ -97,7 +132,7 @@ class _OthelloBoardState extends State<OthelloBoard> {
               ...List.generate(
                 8,
                 (y) => OthelloCell(
-                  onTap: () => handleClick(x),
+                  onTap: () => _handleClick(x, y),
                   x: x,
                   y: y,
                 ),

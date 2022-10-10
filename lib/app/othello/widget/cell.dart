@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:othello/app/othello/widget/board.dart';
+import 'package:othello/app/othello/widget/disc.dart';
+
 //マス目
 class OthelloCell extends StatelessWidget {
   const OthelloCell({
@@ -29,28 +32,7 @@ class OthelloCell extends StatelessWidget {
         ),
         width: cellSize,
         height: cellSize,
-        //child: Center(child: _buildItem(table[x][y])),
-      ),
-    );
-  }
-
-  //石の色分け
-  Widget? _othelloDiscJudg(BuildContext context, var value) {
-    if (value == "B") {
-      return _othelloDisc(context, Colors.black);
-    } else if (value == "W") {
-      return _othelloDisc(context, Colors.white);
-    }
-    return null;
-  }
-
-  //石のUI
-  Widget _othelloDisc(BuildContext context, Color color) {
-    return Container(
-      margin: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
+        child: Center(child: OthelloDisc(cellState: table[x][y])),
       ),
     );
   }
