@@ -71,28 +71,7 @@ class _OthelloBoardState extends State<OthelloBoard> {
         ),
         Container(
           color: const Color.fromARGB(223, 3, 110, 44),
-          child: SizedBox(
-            //マス目の大きさ
-            height: 45 * 8,
-            width: 45 * 8,
-            //[GridView]マス目を作る
-            //[.count]で常に正方形を表示する
-            child: GridView.count(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              //1行に表示する数
-              crossAxisCount: 8,
-              //表示するSquareの数
-              children: List.generate(
-                  64,
-                  (int i) => OthelloCell(
-                        onTap: () => handleClick(i),
-                        value:
-                            //'$i' テキストを表示するだけの値
-                            _OthelloSquare[i],
-                      )),
-            ),
-          ),
+          child: _buildBoard(),
         ),
         Padding(
             padding: const EdgeInsets.all(20),
@@ -104,6 +83,28 @@ class _OthelloBoardState extends State<OthelloBoard> {
                 Text('white:$whiteCount', style: const TextStyle(fontSize: 25))
               ],
             )),
+      ],
+    );
+  }
+
+  Widget _buildBoard() {
+    return Column(
+      children: [
+        ...List.generate(
+          8,
+          (x) => Row(
+            children: [
+              ...List.generate(
+                8,
+                (y) => OthelloCell(
+                  onTap: () => handleClick(x),
+                  x: x,
+                  y: y,
+                ),
+              ),
+            ],
+          ),
+        )
       ],
     );
   }
