@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:othello/app/othello/widget/othello_board.dart';
+import 'package:othello/app/othello/widget/game.dart';
 
 import 'package:othello/main.dart';
 
