@@ -80,6 +80,7 @@ class _OthelloBoardState extends State<OthelloBoard> {
         }
       }
     }
+    _searchCanPut();
   }
 
   /// 石を置いた時の処理
@@ -106,7 +107,25 @@ class _OthelloBoardState extends State<OthelloBoard> {
           }
           nowPrayer = Player.black;
         }
+        _searchCanPut();
       });
+    }
+  }
+
+  /// 置けるマスをチェックする
+  void _searchCanPut() {
+    for (int x = 0; x < 8; x++) {
+      for (int y = 0; y < 8; y++) {
+        List<Coordinate> canPutCellList = pasteItemToTable(x, y, nowPrayer);
+        if (table[x][y].owner == null) {
+          table[x][y] = CellState(cellType: CellType.empty, owner: null);
+        }
+        if (canPutCellList.isNotEmpty) {
+          if (table[x][y].owner == null) {
+            table[x][y] = CellState(cellType: CellType.canPut, owner: null);
+          }
+        }
+      }
     }
   }
 
