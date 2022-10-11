@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:othello/app/othello/widget/cell.dart';
 import 'package:othello/app/othello/process/check.dart';
+import 'package:othello/app/othello/widget/counter.dart';
 
 enum Player {
   // 黒
@@ -45,6 +46,10 @@ List<List<CellState>> table = List.generate(
 // 現在のプレイヤー（最初は黒）
 Player nowPrayer = Player.black;
 
+// 黒と白それぞれの石の数
+int countItemWhite = 0;
+int countItemBlack = 0;
+
 //マス目[OthelloCell]を表示するBoard
 class OthelloBoard extends StatefulWidget {
   const OthelloBoard({
@@ -59,28 +64,26 @@ class _OthelloBoardState extends State<OthelloBoard> {
   @override
   // [initState] = Widgetが作成されたタイミングで処理をする
   void initState() {
-    initStartCellState();
+    _initStartCellState();
     super.initState();
   }
 
   /// 初期状態を作る
-  void initStartCellState() {
+  void _initStartCellState() {
     // 最初の石の状態を作る
     for (int i = 0; i < 8; i++) {
       for (int j = 0; j < 8; j++) {
         if (i == 3 && j == 3 || i == 4 && j == 4) {
-          // 最初に黒を置いているところ
           table[i][j] = CellState(cellType: CellType.exists, owner: Player.black);
         } else if (i == 3 && j == 4 || i == 4 && j == 3) {
-          // 最初に白を置いているところ
           table[i][j] = CellState(cellType: CellType.exists, owner: Player.white);
         } else {
-          // その他
           table[i][j] = CellState(cellType: CellType.empty, owner: null);
         }
       }
     }
     _searchCanPut();
+    _count();
   }
 
   /// 石を置いた時の処理
@@ -108,6 +111,7 @@ class _OthelloBoardState extends State<OthelloBoard> {
           nowPrayer = Player.black;
         }
         _searchCanPut();
+        _count();
       });
     }
   }
@@ -129,6 +133,22 @@ class _OthelloBoardState extends State<OthelloBoard> {
     }
   }
 
+  /// 石の数をカウントする
+  void _count() {
+    countItemBlack = 0;
+    countItemWhite = 0;
+    for (int x = 0; x < 8; x++) {
+      for (int y = 0; y < 8; y++) {
+        if (table[x][y].owner == Player.black) {
+          countItemBlack++;
+        }
+        if (table[x][y].owner == Player.white) {
+          countItemWhite++;
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -137,6 +157,7 @@ class _OthelloBoardState extends State<OthelloBoard> {
           color: const Color.fromARGB(223, 3, 110, 44),
           child: _buildBoard(),
         ),
+        Counter(countItemBlack: countItemBlack, countItemWhite: countItemWhite, nowPrayer: nowPrayer)
       ],
     );
   }

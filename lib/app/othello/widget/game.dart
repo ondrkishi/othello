@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:othello/app/othello/widget/board.dart';
+import 'package:othello/app/othello/widget/counter.dart';
 
 //盤面[OthelloBoard]を表示するGame
 class OthelloGame extends StatelessWidget {
